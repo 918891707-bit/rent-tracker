@@ -153,7 +153,7 @@ async function saveSettings() {
 
 async function handleUpgrade() {
   try {
-    const res: any = await $fetch('/api/stripe/checkout', {
+    const res: any = await $fetch('/api/checkout', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

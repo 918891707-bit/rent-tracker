@@ -5,14 +5,14 @@ export default defineNuxtConfig({
   modules: ['@nuxtjs/tailwindcss'],
   runtimeConfig: {
     // Server-side only
-    stripeSecretKey: process.env.STRIPE_SECRET_KEY || '',
-    stripeWebhookSecret: process.env.STRIPE_WEBHOOK_SECRET || '',
+    lemonsqueezyApiKey: process.env.LEMONSQUEEZY_API_KEY || '',
+    lemonsqueezyWebhookSecret: process.env.LEMONSQUEEZY_WEBHOOK_SECRET || '',
     resendApiKey: process.env.RESEND_API_KEY || '',
     jwtSecret: process.env.JWT_SECRET || 'dev-secret-change-in-production',
     // Public
     public: {
       appUrl: process.env.APP_URL || 'http://localhost:3000',
-      stripePublishableKey: process.env.STRIPE_PUBLISHABLE_KEY || '',
+      lemonsqueezyStoreId: process.env.LEMONSQUEEZY_STORE_ID || '',
     }
   },
   app: {
