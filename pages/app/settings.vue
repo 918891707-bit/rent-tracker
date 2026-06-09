@@ -110,8 +110,32 @@ const settings = ref({
   currency: 'USD',
 })
 const subscription = ref<any>(null)
+const paddleLoaded = ref(false)
+
+// Paddle config
+const PADDLE_TOKEN = 'live_67f80b51a0624705e7b016a45fc'
+const PADDLE_PRICE_ID = 'pri_01ktq24bxy6254dpem455hhpwa'
 
 onMounted(async () => {
+  // Load Paddle.js
+  const script = document.createElement('script')
+  script.src = 'https://cdn.paddle.com/paddle/v2/paddle.js'
+  script.onload = () => {
+    if ((window as any).Paddle) {
+      (window as any).Paddle.Environment.set('production')
+      ;(window as any).Paddle.Initialize({
+        token: PADDLE_TOKEN,
+        checkout: {
+          settings: {
+            displayMode: 'overlay',
+          }
+        }
+      })
+      paddleLoaded.value = true
+    }
+  }
+  document.head.appendChild(script)
+
   try {
     const [s, sub] = await Promise.all([
       $fetch('/api/settings', {
@@ -152,20 +176,11 @@ async function saveSettings() {
 }
 
 async function handleUpgrade() {
-  try {
-    const res: any = await $fetch('/api/checkout', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        Authorization: `Bearer ${localStorage.getItem('rent_track_token')}`,
-      },
-      body: JSON.stringify({ plan: 'monthly' }),
-    })
-    if (res.url) {
-      window.location.href = res.url
-    }
-  } catch (e) {
-    console.error('Failed to start checkout', e)
-  }
+  if (!(window as any).Paddle) return
+  ;(window as any).Paddle.Checkout.open({
+    items: [{ priceId: PADDLE_PRICE_ID, quantity: 1 }],
+    customer: { email: user.value?.email },
+    customData: { user_id: user.value?.id || '' },
+  })
 }
 </script>

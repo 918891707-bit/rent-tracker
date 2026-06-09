@@ -3,9 +3,8 @@ generator client {
 }
 
 datasource db {
-  provider  = "postgresql"
-  url       = env("POSTGRES_PRISMA_URL")
-  directUrl = env("POSTGRES_URL_NON_POOLING")
+  provider = "sqlite"
+  url      = "file:./dev.db"
 }
 
 model User {
@@ -40,7 +39,7 @@ model Unit {
   propertyId String
   property   Property  @relation(fields: [propertyId], references: [id], onDelete: Cascade)
   name       String
-  rentAmount Float     @default(0)
+  rentAmount  Float     @default(0)
   currency   String    @default("USD")
   tenants    Tenant[]
   payments   Payment[]
@@ -72,8 +71,8 @@ model Payment {
   amount    Float
   dueDate   DateTime
   paidDate  DateTime?
-  status    String    @default("pending") // pending, paid, late, overdue
-  method    String?   // cash, check, bank_transfer, online, other
+  status    String    @default("pending")
+  method    String?
   notes     String?
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -109,8 +108,8 @@ model Subscription {
 model ReminderLog {
   id        String   @id @default(cuid())
   paymentId String
-  type      String   // email, sms
+  type      String
   sentAt    DateTime @default(now())
-  status    String   // sent, failed, opened
+  status    String
   error     String?
 }
