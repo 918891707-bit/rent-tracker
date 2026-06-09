@@ -2,5 +2,11 @@
   "buildCommand": "npx prisma generate && npx nuxt build",
   "installCommand": "npm install",
   "framework": "nuxtjs",
-  "outputDirectory": ".output"
+  "outputDirectory": ".output",
+  "crons": [
+    {
+      "path": "/api/reminders/trigger?cron_key=your-cron-secret",
+      "schedule": "0 9 * * *"
+    }
+  ]
 }
