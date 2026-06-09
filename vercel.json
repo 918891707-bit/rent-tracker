@@ -1,11 +1,11 @@
 {
-  "buildCommand": "npx prisma generate && npx nuxt build",
+  "buildCommand": "npx prisma generate && npx prisma db push --accept-data-loss && npx nuxt build",
   "installCommand": "npm install",
   "framework": "nuxtjs",
   "outputDirectory": ".output",
   "crons": [
     {
-      "path": "/api/reminders/trigger?cron_key=your-cron-secret",
+      "path": "/api/reminders/trigger?cron_key=91fa57c01f2899671ef2336641652e44",
       "schedule": "0 9 * * *"
     }
   ]
