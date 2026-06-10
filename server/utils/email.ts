@@ -1,13 +1,20 @@
-import { Resend } from 'resend'
+import nodemailer from 'nodemailer'
 
-let resendClient: Resend | null = null
+let transporter: any = null
 
-function getResend(): Resend {
-  if (!resendClient) {
-    const config = useRuntimeConfig()
-    resendClient = new Resend(config.resendApiKey || 're_placeholder')
+function getTransporter() {
+  if (!transporter) {
+    transporter = nodemailer.createTransport({
+      host: 'smtp.qq.com',
+      port: 465,
+      secure: true,
+      auth: {
+        user: process.env.SMTP_USER || '918891707@qq.com',
+        pass: process.env.SMTP_PASS || '',
+      },
+    })
   }
-  return resendClient
+  return transporter
 }
 
 interface RentReminderEmail {
@@ -21,8 +28,12 @@ interface RentReminderEmail {
 }
 
 export async function sendRentReminder(data: RentReminderEmail) {
-  const resend = getResend()
-  const config = useRuntimeConfig()
+  const transport = getTransporter()
+
+  if (!process.env.SMTP_PASS) {
+    console.log('SMTP not configured — skipping email to', data.to)
+    return { success: false, error: 'SMTP password not set' }
+  }
 
   const isOverdue = data.type === 'overdue'
   const subject = isOverdue
@@ -30,8 +41,8 @@ export async function sendRentReminder(data: RentReminderEmail) {
     : `Upcoming rent due for ${data.unitName}`
 
   try {
-    await resend.emails.send({
-      from: 'RentTrack <notifications@renttrack.app>',
+    await transport.sendMail({
+      from: `RentTrack <${process.env.SMTP_USER || '918891707@qq.com'}>`,
       to: data.to,
       subject,
       html: buildEmailTemplate(data),
@@ -58,12 +69,10 @@ function buildEmailTemplate(data: RentReminderEmail): string {
       <div style="text-align: center; margin-bottom: 24px;">
         <h1 style="color: #1f2937; font-size: 24px; margin: 0;">RentTrack</h1>
       </div>
-
       <div style="background: ${accentColor}10; border-left: 4px solid ${accentColor}; padding: 16px; border-radius: 8px; margin-bottom: 24px;">
-        <p style="color: ${accentColor}; font-weight: 700; font-size: 14px; margin: 0 0 4px 0; letter-spacing: 0.5px;">${statusText}</p>
+        <p style="color: ${accentColor}; font-weight: 700; font-size: 14px; margin: 0 0 4px 0;">${statusText}</p>
         <p style="color: #374151; font-size: 20px; font-weight: 700; margin: 0;">$${data.amount.toLocaleString()}</p>
       </div>
-
       <table style="width: 100%; border-collapse: collapse; margin-bottom: 24px;">
         <tr>
           <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Unit</td>
@@ -80,11 +89,10 @@ function buildEmailTemplate(data: RentReminderEmail): string {
           </td>
         </tr>
       </table>
-
       <div style="text-align: center; padding-top: 16px; border-top: 1px solid #f3f4f6;">
         <p style="color: #9ca3af; font-size: 12px; margin: 0;">
           Sent by RentTrack · ${data.tenantName}<br/>
-          This is an automated reminder. Please contact your landlord if you have questions.
+          This is an automated reminder.
         </p>
       </div>
     </div>
